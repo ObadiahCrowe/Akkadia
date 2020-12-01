@@ -1,4 +1,4 @@
-package io.skyfallsdk.akkadia.compat;
+package io.skyfallsdk.akkadia.plugin;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.Listener;

@@ -1,5 +1,7 @@
 package io.skyfallsdk.akkadia;
 
+import io.skyfallsdk.SkyfallServer;
+import io.skyfallsdk.command.Command;
 import org.bukkit.*;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.block.data.BlockData;
@@ -29,6 +31,7 @@ import java.io.File;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 class AkkadiaServer implements Server {
 
@@ -40,17 +43,17 @@ class AkkadiaServer implements Server {
 
     @Override
     public String getName() {
-        return null;
+        return "Skyfall";
     }
 
     @Override
     public String getVersion() {
-        return null;
+        return this.getBukkitVersion();
     }
 
     @Override
     public String getBukkitVersion() {
-        return null;
+        return io.skyfallsdk.Server.get().getExpansionInfo(Akkadia.class).version();
     }
 
     @Override
@@ -60,22 +63,22 @@ class AkkadiaServer implements Server {
 
     @Override
     public int getMaxPlayers() {
-        return 0;
+        return io.skyfallsdk.Server.get().getMaxPlayers();
     }
 
     @Override
     public int getPort() {
-        return 0;
+        return ((SkyfallServer) io.skyfallsdk.Server.get()).getConfig().getNetworkConfig().getPort();
     }
 
     @Override
     public int getViewDistance() {
-        return 0;
+        return ((SkyfallServer) io.skyfallsdk.Server.get()).getConfig().getRenderDistance();
     }
 
     @Override
     public String getIp() {
-        return null;
+        return ((SkyfallServer) io.skyfallsdk.Server.get()).getConfig().getNetworkConfig().getAddress();
     }
 
     @Override
@@ -85,17 +88,17 @@ class AkkadiaServer implements Server {
 
     @Override
     public boolean getGenerateStructures() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean getAllowEnd() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean getAllowNether() {
-        return false;
+        return true;
     }
 
     @Override
@@ -185,12 +188,12 @@ class AkkadiaServer implements Server {
 
     @Override
     public PluginManager getPluginManager() {
-        return null;
+        return this.akkadia.pluginManager;
     }
 
     @Override
     public BukkitScheduler getScheduler() {
-        return null;
+        return this.akkadia.scheduler;
     }
 
     @Override
@@ -260,7 +263,7 @@ class AkkadiaServer implements Server {
 
     @Override
     public Logger getLogger() {
-        return null;
+        return this.akkadia.loggerWrapper;
     }
 
     @Override
@@ -315,7 +318,7 @@ class AkkadiaServer implements Server {
 
     @Override
     public Map<String, String[]> getCommandAliases() {
-        return null;
+        return io.skyfallsdk.Server.get().getCommandMap().getCommands().stream().collect(Collectors.toMap(Command::getName, Command::getAliases));
     }
 
     @Override
@@ -330,7 +333,7 @@ class AkkadiaServer implements Server {
 
     @Override
     public boolean getOnlineMode() {
-        return false;
+        return ((SkyfallServer) io.skyfallsdk.Server.get()).getConfig().isOnlineMode();
     }
 
     @Override
@@ -410,7 +413,7 @@ class AkkadiaServer implements Server {
 
     @Override
     public File getWorldContainer() {
-        return null;
+        return io.skyfallsdk.Server.get().getPath().toFile();
     }
 
     @Override
