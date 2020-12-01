@@ -263,7 +263,7 @@ class AkkadiaServer implements Server {
 
     @Override
     public Logger getLogger() {
-        return this.akkadia.loggerWrapper;
+        return this.akkadia.logger;
     }
 
     @Override

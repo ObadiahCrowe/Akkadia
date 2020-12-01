@@ -7,9 +7,9 @@ import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-public class LoggerWrapper extends Logger {
+public class AkkadiaLogger extends Logger {
 
-    public LoggerWrapper() {
+    public AkkadiaLogger() {
         super("Akkadia", null);
 
         this.addHandler(new Handler() {
