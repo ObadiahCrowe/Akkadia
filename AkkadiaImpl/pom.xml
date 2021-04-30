@@ -59,6 +59,29 @@
             </plugin>
 
             <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <version>1.5.2</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <file>${project.basedir}/src/main/java/io/skyfallsdk/akkadia/Akkadia.java</file>
+                    <replacements>
+                        <replacement>
+                            <token>BUKKIT_VERSION</token>
+                            <value>${bukkit.version}</value>
+                        </replacement>
+                    </replacements>
+                </configuration>
+            </plugin>
+
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.7.0</version>

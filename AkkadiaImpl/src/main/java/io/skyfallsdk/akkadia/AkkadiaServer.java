@@ -1,6 +1,8 @@
 package io.skyfallsdk.akkadia;
 
 import io.skyfallsdk.SkyfallServer;
+import io.skyfallsdk.akkadia.plugin.AkkadiaPluginLoader;
+import io.skyfallsdk.akkadia.util.AkkadiaUnsafeValues;
 import io.skyfallsdk.command.Command;
 import org.bukkit.*;
 import org.bukkit.advancement.Advancement;
@@ -28,6 +30,7 @@ import org.bukkit.util.CachedServerIcon;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -36,9 +39,14 @@ import java.util.stream.Collectors;
 class AkkadiaServer implements Server {
 
     private final Akkadia akkadia;
+    private final AkkadiaUnsafeValues unsafeValues;
+    private final AkkadiaPluginLoader loader;
 
     AkkadiaServer(Akkadia akkadia) {
         this.akkadia = akkadia;
+        this.unsafeValues = new AkkadiaUnsafeValues();
+
+        this.loader = new AkkadiaPluginLoader(this);
     }
 
     @Override
@@ -623,7 +631,7 @@ class AkkadiaServer implements Server {
 
     @Override
     public UnsafeValues getUnsafe() {
-        return null;
+        return this.unsafeValues;
     }
 
     @Override
