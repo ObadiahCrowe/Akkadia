@@ -20,6 +20,6 @@ public class AkkadiaPluginLogger extends PluginLogger {
 
     @Override
     public void log(LogRecord record) {
-        Server.get().getLogger().log(Level.getLevel(record.getLevel().getName()), record.getMessage(), record.getParameters());
+        Server.get().getLogger().log(AkkadiaLogger.LEVELS_TO_LEVELS.getOrDefault(record.getLevel(), Level.INFO), record.getMessage(), record.getParameters());
     }
 }

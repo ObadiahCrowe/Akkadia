@@ -1,6 +1,7 @@
 package io.skyfallsdk.akkadia;
 
 import io.skyfallsdk.Server;
+import io.skyfallsdk.akkadia.compat.CompatibilityType;
 import io.skyfallsdk.akkadia.config.AkkadiaConfig;
 import io.skyfallsdk.akkadia.logger.AkkadiaLogger;
 import io.skyfallsdk.akkadia.plugin.AkkadiaPluginManager;
@@ -10,7 +11,7 @@ import io.skyfallsdk.expansion.Expansion;
 import io.skyfallsdk.expansion.ExpansionInfo;
 import org.bukkit.Bukkit;
 
-@ExpansionInfo(name = "Akkadia", version = "1.16.4-R0.1-SNAPSHOT", authors = { "Obadiah Crowe" })
+@ExpansionInfo(name = "Akkadia", version = "1.16.5-R0.1-SNAPSHOT", authors = { "Obadiah Crowe" })
 public class Akkadia implements Expansion {
 
     private AkkadiaConfig config;
@@ -27,6 +28,14 @@ public class Akkadia implements Expansion {
         this.pluginManager = new AkkadiaPluginManager(this);
         this.scheduler = new AkkadiaScheduler(this);
 
+        for (CompatibilityType type : CompatibilityType.values()) {
+            if (type.isEnabled()) {
+                this.getLogger().info("Enabling " + type.getName() + " Compatibility...");
+                // Has to be done synchronously to ensure that heavy tasks are completed before plugin load.
+                type.getWrapper().onAkkadiaLoad();
+            }
+        }
+
         Bukkit.setServer(new AkkadiaServer(this)); // Set Bukkit server implementation.
 
         // No reason to check if exists, as Skyfall creates it before loading Akkadia.
@@ -35,4 +44,8 @@ public class Akkadia implements Expansion {
 
     @Override
     public void onShutdown() {}
+
+    public AkkadiaConfig getConfig() {
+        return this.config;
+    }
 }

@@ -1,6 +1,8 @@
 package io.skyfallsdk.akkadia;
 
+import com.google.common.collect.Lists;
 import io.skyfallsdk.SkyfallServer;
+import io.skyfallsdk.akkadia.Akkadia;
 import io.skyfallsdk.akkadia.plugin.AkkadiaPluginLoader;
 import io.skyfallsdk.akkadia.util.AkkadiaUnsafeValues;
 import io.skyfallsdk.command.Command;
@@ -24,6 +26,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicesManager;
 import org.bukkit.plugin.messaging.Messenger;
+import org.bukkit.plugin.messaging.StandardMessenger;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.util.CachedServerIcon;
@@ -40,13 +43,16 @@ class AkkadiaServer implements Server {
 
     private final Akkadia akkadia;
     private final AkkadiaUnsafeValues unsafeValues;
+
     private final AkkadiaPluginLoader loader;
+    private final Messenger messenger;
 
     AkkadiaServer(Akkadia akkadia) {
         this.akkadia = akkadia;
         this.unsafeValues = new AkkadiaUnsafeValues();
 
         this.loader = new AkkadiaPluginLoader(this);
+        this.messenger = new StandardMessenger();
     }
 
     @Override
@@ -66,7 +72,7 @@ class AkkadiaServer implements Server {
 
     @Override
     public Collection<? extends Player> getOnlinePlayers() {
-        return null;
+        return Lists.newArrayList();
     }
 
     @Override
@@ -97,6 +103,11 @@ class AkkadiaServer implements Server {
     @Override
     public boolean getGenerateStructures() {
         return true;
+    }
+
+    @Override
+    public int getMaxWorldSize() {
+        return 0;
     }
 
     @Override
@@ -431,7 +442,7 @@ class AkkadiaServer implements Server {
 
     @Override
     public Messenger getMessenger() {
-        return null;
+        return this.messenger;
     }
 
     @Override
@@ -496,7 +507,7 @@ class AkkadiaServer implements Server {
 
     @Override
     public String getMotd() {
-        return null;
+        return io.skyfallsdk.Server.get().getMotd();
     }
 
     @Override

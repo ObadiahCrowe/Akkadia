@@ -2,19 +2,16 @@ package io.skyfallsdk.akkadia.plugin;
 
 import com.google.common.io.ByteStreams;
 import io.skyfallsdk.akkadia.Akkadia;
+import io.skyfallsdk.akkadia.compat.CompatibilityType;
 import org.apache.commons.lang.Validate;
-import org.bukkit.Server;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -99,6 +96,12 @@ public final class BukkitPluginClassLoader extends URLClassLoader { // Spigot
         } catch (InstantiationException ex) {
             throw new InvalidPluginException("Abnormal plugin type", ex);
         }
+
+        for (CompatibilityType type : CompatibilityType.values()) {
+            if (type.matchesPackageName(description.getMain())) {
+                type.getWrapper().onPluginEnable(this);
+            }
+        }
     }
 
     @Override
@@ -112,7 +115,7 @@ public final class BukkitPluginClassLoader extends URLClassLoader { // Spigot
     }
 
     @Override
-    protected Class<?> findClass(String name) throws ClassNotFoundException {
+    public Class<?> findClass(String name) throws ClassNotFoundException {
         return findClass(name, true);
     }
 
@@ -158,10 +161,12 @@ public final class BukkitPluginClassLoader extends URLClassLoader { // Spigot
                         throw new ClassNotFoundException(name, ex);
                     }
 
-                    try {
-                        classBytes = loader.server.getUnsafe().processClass(description, path, classBytes);
-                    } catch (Exception e) {
-                        io.skyfallsdk.Server.get().getExpansion(Akkadia.class).getLogger().error(e);
+                    if (!io.skyfallsdk.Server.get().getExpansion(Akkadia.class).getConfig().isSkippingLegacyConversion()) {
+                        try {
+                            classBytes = loader.server.getUnsafe().processClass(description, path, classBytes);
+                        } catch (Exception e) {
+                            io.skyfallsdk.Server.get().getExpansion(Akkadia.class).getLogger().error(e);
+                        }
                     }
 
                     int dot = name.lastIndexOf('.');
@@ -214,26 +219,6 @@ public final class BukkitPluginClassLoader extends URLClassLoader { // Spigot
 
     Set<String> getClasses() {
         return classes.keySet();
-    }
-
-    synchronized void initialize(JavaPlugin javaPlugin) {
-        Validate.notNull(javaPlugin, "Initializing plugin cannot be null");
-        Validate.isTrue(javaPlugin.getClass().getClassLoader() == this, "Cannot initialize plugin outside of this class loader");
-        if (this.plugin != null || this.pluginInit != null) {
-            throw new IllegalArgumentException("Plugin already initialized!", pluginState);
-        }
-
-        pluginState = new IllegalStateException("Initial initialization");
-        this.pluginInit = javaPlugin;
-
-        try {
-            Method method = JavaPlugin.class.getDeclaredMethod("init", PluginLoader.class, Server.class, PluginDescriptionFile.class, File.class, File.class, ClassLoader.class);
-            method.setAccessible(true);
-
-            method.invoke(javaPlugin, loader, loader.server, description, dataFolder, file, this);
-        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
     }
 
     // Paper start

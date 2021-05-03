@@ -2,6 +2,8 @@ package io.skyfallsdk.akkadia.plugin;
 
 import com.google.common.collect.Maps;
 import io.skyfallsdk.akkadia.Akkadia;
+import io.skyfallsdk.akkadia.compat.CompatibilityType;
+import io.skyfallsdk.akkadia.logger.AkkadiaPluginLogger;
 import io.skyfallsdk.akkadia.util.ExpansionWrapper;
 import io.skyfallsdk.expansion.Expansion;
 import io.skyfallsdk.expansion.ExpansionInfo;
@@ -23,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -58,7 +61,7 @@ public class AkkadiaPluginLoader implements PluginLoader {
         this.pool.appendClassPath(new ClassClassPath(PluginDescriptionFile.class));
 
         io.skyfallsdk.Server.get().getExpansion(Akkadia.class).getLogger().info("Overwriting JavaPlugin constructor to enable Bukkit plugin compatibility.");
-        try {
+/*        try {
             CtClass ctClass = this.pool.get("org.bukkit.plugin.java.JavaPlugin");
             CtConstructor ctConstructor = ctClass.getConstructors()[0];
 
@@ -67,7 +70,7 @@ public class AkkadiaPluginLoader implements PluginLoader {
             ctClass.toClass(JavaPlugin.class);
         } catch (NotFoundException | CannotCompileException e) {
             e.printStackTrace();
-        }
+        }*/
 
         io.skyfallsdk.Server.get().getExpansion(Akkadia.class).getLogger().info("Attempting to find Bukkit plugins.");
         this.pluginDir = io.skyfallsdk.Server.get().getExpansion(Akkadia.class).getPath().resolve("plugins");
@@ -134,18 +137,25 @@ public class AkkadiaPluginLoader implements PluginLoader {
             throw new InvalidPluginException(ex);
         }
 
-        loaders.add(loader);
+        try {
+            Method initMethod = JavaPlugin.class.getDeclaredMethod("init", PluginLoader.class, Server.class, PluginDescriptionFile.class, File.class, File.class, ClassLoader.class);
+            initMethod.setAccessible(true);
 
-        //EXPANSION_CLASSES.put(loader.plugin.getClass(), wrapper.getClass());
+            initMethod.invoke(loader.plugin, this, this.server, description, pluginDataFolder.toFile(), file, loader);
+        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+            throw new InvalidPluginException("Could not initialise JavaPlugin", e);
+        }
 
-/*        try {
+        try {
             Field field = JavaPlugin.class.getDeclaredField("logger");
             field.setAccessible(true);
 
             field.set(loader.plugin, new AkkadiaPluginLogger(loader.plugin));
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            io.skyfallsdk.Server.get().getExpansion(Akkadia.class).getLogger().error(e);
-        }*/
+            throw new InvalidPluginException("Could not set logger", e);
+        }
+
+        loaders.add(loader);
 
         Class<? extends ExpansionWrapper> wrapperClass = null;
 
@@ -219,7 +229,6 @@ public class AkkadiaPluginLoader implements PluginLoader {
             stream = jar.getInputStream(entry);
 
             return new PluginDescriptionFile(stream);
-
         } catch (IOException | YAMLException ex) {
             throw new InvalidDescriptionException(ex);
         } finally {
